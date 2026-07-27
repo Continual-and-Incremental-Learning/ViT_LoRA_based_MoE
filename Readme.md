@@ -2,7 +2,7 @@
 
 **Tackling catastrophic forgetting on Caltech-101 with a frozen ViT-B/16 backbone, per-task LoRA "experts" that are soft-routed at inference time via CLS-token similarity, an Equiangular Tight Frame (ETF) classifier borrowed from Neural Collapse theory, and an orthogonality-regularized loss that keeps new task subspaces from colliding with old ones.**
 
-This repository documents an ongoing set of experiments in class-incremental continual learning. The core question: *can we add new classes to a vision transformer without quietly destroying its ability to recognize the old ones — without replaying old data, and without a learned gating network?*
+This repository documents an ongoing set of experiments in class-incremental continual learning. The core question: *can we add new classes to a vision transformer without quietly destroying its ability to recognize the old ones in an examplar free setting and without a learned gating network?*
 
 ---
 
