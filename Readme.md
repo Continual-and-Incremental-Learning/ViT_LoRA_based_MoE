@@ -50,44 +50,46 @@ Critically, **the two Task-2 runs are not chained to each other** — they are t
 This isolates a single variable — orthogonality strength — while holding the learning rate (`1e-3`), weight decay (`1e-4`), and starting weights identical across both runs.
 
 
-Results
+## Results
 
-All three runs were stopped manually (KeyboardInterrupt) once their curves had said enough to compare, rather than always burning the full 100-epoch budget — Stage 1 logged 61 epochs, Ablation A logged 24 epochs, and Ablation B logged 52 epochs.
+All three runs were stopped manually (`KeyboardInterrupt`) once their curves had said enough to compare, rather than always burning the full 100-epoch budget — Stage 1 logged **61 epochs**, Ablation A logged **24 epochs**, and Ablation B logged **52 epochs**.
 
-Stage 1: Task-1 only (classes 0-49)
+### Stage 1: Task-1 only (classes 0-49)
 
-Validation accuracy on the 50-way task climbed from 9.8% at epoch 1 to the low 90s by epoch ~20, then settled into a plateau, peaking at 93.78% (epoch 50, matched again at epoch 60):
+Validation accuracy on the 50-way task climbed from **9.8%** at epoch 1 to the low 90s by epoch ~20, then settled into a plateau, peaking at **93.78%** (epoch 50, matched again at epoch 60):
 
-Epoch	1	5	10	20	30	40	50	60
-Task-0 val accuracy	9.8%	76.1%	83.4%	90.0%	92.1%	93.6%	93.8%	93.8%
+| Epoch | 1 | 5 | 10 | 20 | 30 | 40 | 50 | 60 |
+|---|---|---|---|---|---|---|---|---|
+| Task-0 val accuracy | 9.8% | 76.1% | 83.4% | 90.0% | 92.1% | 93.6% | **93.8%** | 93.8% |
 
 This is the checkpoint both Task-2 ablations branch from independently.
 
-Stage 2: the two Task-2 ablations, head-to-head
+### Stage 2: the two Task-2 ablations, head-to-head
 
-Both ablations start from that same checkpoint and train a fresh 52-way adapter, differing only in λ_orth. Reading the two curves at the same epoch is the fairest comparison, since Ablation A's run is shorter:
+Both ablations start from that same checkpoint and train a fresh 52-way adapter, differing only in `λ_orth`. Reading the two curves at the same epoch is the fairest comparison, since Ablation A's run is shorter:
 
-Epoch	Task-0 retention, A (λ=100)	Task-0 retention, B (λ=1000)	Task-1 accuracy, A (λ=100)	Task-1 accuracy, B (λ=1000)
-1	87.7%	88.3%	0.0%	0.0%
-5	82.7%	87.6%	10.5%	0.5%
-10	84.1%	81.7%	54.3%	3.0%
-15	74.4%	82.2%	79.4%	8.4%
-20	65.8%	83.3%	86.8%	22.8%
-30	(stopped)	81.4%	(stopped)	48.0%
-40	(stopped)	77.9%	(stopped)	67.5%
-50	(stopped)	73.9%	(stopped)	78.3%
+| Epoch | Task-0 retention, A (`λ=100`) | Task-0 retention, B (`λ=1000`) | Task-1 accuracy, A (`λ=100`) | Task-1 accuracy, B (`λ=1000`) |
+|---|---|---|---|---|
+| 1  | 87.7% | 88.3% | 0.0%  | 0.0%  |
+| 5  | 82.7% | 87.6% | 10.5% | 0.5%  |
+| 10 | 84.1% | 81.7% | 54.3% | 3.0%  |
+| 15 | 74.4% | 82.2% | 79.4% | 8.4%  |
+| 20 | **65.8%** | **83.3%** | **86.8%** | **22.8%** |
+| 30 | *(stopped)* | 81.4% | *(stopped)* | 48.0% |
+| 40 | *(stopped)* | 77.9% | *(stopped)* | 67.5% |
+| 50 | *(stopped)* | 73.9% | *(stopped)* | 78.3% |
 
-The orthogonality loss itself, for reference, started at ~2.0 (A) and ~20.2 (B) at epoch 1 — roughly proportional to the 10x weight difference — and both decayed to effectively 0 within the first 5-10 epochs as each new adapter settled into a subspace the router could tell apart from the old one.
+The orthogonality loss itself, for reference, started at **~2.0** (A) and **~20.2** (B) at epoch 1 — roughly proportional to the 10x weight difference — and both decayed to effectively **0** within the first 5-10 epochs as each new adapter settled into a subspace the router could tell apart from the old one.
 
-A concrete per-class example
+### A concrete per-class example
 
-Task-1 class index 46 is a clean illustration of forgetting in Ablation A: its held-out accuracy went 54.5% → 45.5% → 27.3% from epoch 1 to epoch ~22. By contrast, class index 43 sat at a flat, low ~33% from epoch 1 onward, in both ablations, before Task-2 training had done anything — a class Stage 1 never really solved, not one that got forgotten. Worth flagging: several Task-1 classes have single-digit validation counts, so per-class accuracy moves in large, noisy steps (1/9, 2/9, 1/11, ...) — the aggregate Task-0/Task-1 numbers above are the more reliable signal.
+Task-1 class index **46** is a clean illustration of forgetting in Ablation A: its held-out accuracy went **54.5% → 45.5% → 27.3%** from epoch 1 to epoch ~22. By contrast, class index **43** sat at a flat, low **~33%** from epoch 1 onward, in both ablations, *before* Task-2 training had done anything — a class Stage 1 never really solved, not one that got forgotten. Worth flagging: several Task-1 classes have single-digit validation counts, so per-class accuracy moves in large, noisy steps (1/9, 2/9, 1/11, ...) — the aggregate Task-0/Task-1 numbers above are the more reliable signal.
 
-Analysis
+## Analysis
 
-1. The orthogonality weight is a working stability–plasticity dial, not just a regularizer in name. At the one epoch both runs share (epoch 20), Ablation A had already reached 86.8% Task-1 accuracy but its Task-0 retention had fallen to 65.8%; Ablation B was almost the mirror image, holding 83.3% Task-0 retention while Task-1 accuracy was still only 22.8%. A single 10x change in one scalar visibly traded roughly 20 points of old-task retention for ~65 points of new-task accuracy at matched training time — a genuinely controlled result, since the two runs share every other setting and starting weight.
+**1. The orthogonality weight is a working stability–plasticity dial, not just a regularizer in name.** At the one epoch both runs share (epoch 20), Ablation A had already reached 86.8% Task-1 accuracy but its Task-0 retention had fallen to 65.8%; Ablation B was almost the mirror image, holding 83.3% Task-0 retention while Task-1 accuracy was still only 22.8%. A single 10x change in one scalar visibly traded roughly **20 points of old-task retention for ~65 points of new-task accuracy** at matched training time — a genuinely controlled result, since the two runs share every other setting and starting weight.
 
-2. That difference is decided early, not maintained throughout training. The orthogonality loss itself collapses to ~0 within the first 5-10 epochs regardless of weight — so for the bulk of both runs, no active orthogonality gradient is pulling on the adapters at all. That means the very different forgetting trajectories seen later (Task-0 retention still falling for Ablation A past epoch 15, but decaying much more slowly for Ablation B) aren't being driven by a persistently-active penalty; they trace back to how strongly that penalty reshaped the adapter's first few optimization steps. In other words, the early training window — not the steady state — is where this particular knob does its work.
+**2. That difference is decided early, not maintained throughout training.** The orthogonality loss itself collapses to ~0 within the first 5-10 epochs *regardless* of weight — so for the bulk of both runs, no active orthogonality gradient is pulling on the adapters at all. That means the very different forgetting trajectories seen later (Task-0 retention still falling for Ablation A past epoch 15, but decaying much more slowly for Ablation B) aren't being driven by a persistently-active penalty; they trace back to how strongly that penalty reshaped the adapter's first few optimization steps. In other words, the early training window — not the steady state — is where this particular knob does its work.
 
 
 ## Observations from the logs
