@@ -52,7 +52,7 @@ This isolates a single variable — orthogonality strength — while holding the
 
 ## Results
 
-All three runs were stopped manually (`KeyboardInterrupt`) once their curves had said enough to compare, rather than always burning the full 100-epoch budget — Stage 1 logged **61 epochs**, Ablation A logged **24 epochs**, and Ablation B logged **52 epochs**.
+All three runs were stopped once their curves had said enough to compare, rather than always burning the full 100-epoch budget: Stage 1 logged **61 epochs**, Ablation A logged **24 epochs**, and Ablation B logged **52 epochs**.
 
 ### Stage 1: Task-1 only (classes 0-49)
 
@@ -68,7 +68,7 @@ This is the checkpoint both Task-2 ablations branch from independently.
 
 Both ablations start from that same checkpoint and train a fresh 52-way adapter, differing only in `λ_orth`. Reading the two curves at the same epoch is the fairest comparison, since Ablation A's run is shorter:
 
-| Epoch | Task-0 retention, A (`λ=100`) | Task-0 retention, B (`λ=1000`) | Task-1 accuracy, A (`λ=100`) | Task-1 accuracy, B (`λ=1000`) |
+| Epoch | Task-1 retention, A (`λ=100`) | Task-1 retention, B (`λ=1000`) | Task-2 accuracy, A (`λ=100`) | Task-2 accuracy, B (`λ=1000`) |
 |---|---|---|---|---|
 | 1  | 87.7% | 88.3% | 0.0%  | 0.0%  |
 | 5  | 82.7% | 87.6% | 10.5% | 0.5%  |
@@ -83,7 +83,7 @@ The orthogonality loss itself, for reference, started at **~2.0** (A) and **~20.
 
 ### A concrete per-class example
 
-Task-1 class index **46** is a clean illustration of forgetting in Ablation A: its held-out accuracy went **54.5% → 45.5% → 27.3%** from epoch 1 to epoch ~22. By contrast, class index **43** sat at a flat, low **~33%** from epoch 1 onward, in both ablations, *before* Task-2 training had done anything — a class Stage 1 never really solved, not one that got forgotten. Worth flagging: several Task-1 classes have single-digit validation counts, so per-class accuracy moves in large, noisy steps (1/9, 2/9, 1/11, ...) — the aggregate Task-0/Task-1 numbers above are the more reliable signal.
+The class-wise performance, as obtained reflects extreme variability with regards to the data-samples, present in that particular class. Task-2 class index **46** is a clean illustration of forgetting in both Ablation A and B: its held-out accuracy went **54.5% → 45.5% → 27.3%** from epoch 1 to epoch ~22. By contrast, class index **43** sat at a flat, low **~33%** from epoch 1 onward, in both ablations, *before* Task-2 training had done anything, not one that got forgotten. Worth flagging: several Task-2 classes have single-digit validation counts, so per-class accuracy moves in large, noisy steps (1/9, 2/9, 1/11, ...) — the aggregate Task-1/Task-2 numbers above are the more reliable signal.
 
 ## Analysis
 
