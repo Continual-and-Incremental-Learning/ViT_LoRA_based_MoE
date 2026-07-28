@@ -52,7 +52,7 @@ This isolates a single variable — orthogonality strength — while holding the
 
 ## Results
 
-The Training has been done unless the Loss has converged:
+FOr both the tasks: Task1 and Task2, the Training has been done unless the Loss has converged, followed which it has been stopped and interrupted. 
 
 ![ViT_LoRA_based_MoE](TrainingLossCurves_Task1_Task2.png)
 
