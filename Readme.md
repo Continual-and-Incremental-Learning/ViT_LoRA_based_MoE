@@ -52,6 +52,10 @@ This isolates a single variable — orthogonality strength — while holding the
 
 ## Results
 
+The Training has been done unless the Loss has converged:
+
+![ViT_LoRA_based_MoE](TrainingLossCurves_Task1_Task2.png)
+
 All three runs were stopped once their curves had said enough to compare, rather than always burning the full 100-epoch budget: Stage 1 logged **61 epochs**, Ablation A logged **24 epochs**, and Ablation B logged **52 epochs**.
 
 ### Stage 1: Task-1 only (classes 0-49)
